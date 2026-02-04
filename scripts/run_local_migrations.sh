@@ -10,7 +10,7 @@ DB_PORT="${DB_PORT:-5432}"
 DB_USER="${DB_USER:-$(whoami)}"
 DB_NAME="${DB_NAME:-library_dev}"
 
-MIGRATIONS_DIR="src/database/migrations"
+MIGRATIONS_DIR="database/migrations"
 
 echo "================================================"
 echo "Library System - Database Migration Runner"
