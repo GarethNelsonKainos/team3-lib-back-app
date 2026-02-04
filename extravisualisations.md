@@ -1,0 +1,622 @@
+# Book Library Web App - Schema Visualizations
+
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    authors ||--o{ book_authors : "written by"
+    books ||--o{ book_authors : has
+    books ||--o{ book_genres : categorized
+    genres ||--o{ book_genres : contains
+    books ||--o{ copies : "has physical"
+    members ||--o{ transactions : borrows
+    copies ||--o{ transactions : "borrowed as"
+
+    authors {
+        INTEGER author_id PK
+        TEXT author_name
+    }
+
+    genres {
+        INTEGER genre_id PK
+        TEXT genre_name UK
+    }
+
+    books {
+        INTEGER book_id PK
+        TEXT title
+        TEXT isbn UK
+        INTEGER publication_year
+        TEXT description
+    }
+
+    book_authors {
+        INTEGER book_id PK,FK
+        INTEGER author_id PK,FK
+    }
+
+    book_genres {
+        INTEGER book_id PK,FK
+        INTEGER genre_id PK,FK
+    }
+
+    members {
+        INTEGER member_id PK
+        TEXT full_name
+        TEXT contact_information
+        TEXT address_line_1
+        TEXT address_line_2
+        TEXT city
+        TEXT post_code
+        DATE join_date
+        DATE expiry_date
+    }
+
+    copies {
+        INTEGER copy_id PK
+        TEXT copy_identifier UK
+        INTEGER book_id FK
+        TEXT status
+    }
+
+    transactions {
+        INTEGER transaction_id PK
+        INTEGER member_id FK
+        INTEGER copy_id FK
+        TIMESTAMP checkout_timestamp
+        TIMESTAMP due_date
+        TIMESTAMP return_timestamp
+    }
+```
+
+## Simplified Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    AUTHORS ||--o{ BOOK_AUTHORS : writes
+    BOOKS ||--o{ BOOK_AUTHORS : "written by"
+    BOOKS ||--o{ BOOK_GENRES : "belongs to"
+    GENRES ||--o{ BOOK_GENRES : categorizes
+    BOOKS ||--o{ COPIES : "has"
+    COPIES ||--o{ TRANSACTIONS : "involved in"
+    MEMBERS ||--o{ TRANSACTIONS : "checks out"
+
+    AUTHORS {
+        int id
+        text name
+    }
+
+    BOOKS {
+        int id
+        text title
+        text isbn
+        int year
+        text description
+    }
+
+    GENRES {
+        int id
+        text name
+    }
+
+    COPIES {
+        int id
+        text identifier
+        text status
+    }
+
+    MEMBERS {
+        int id
+        text name
+        text contact
+        text address
+        date joined
+        date expires
+    }
+
+    TRANSACTIONS {
+        int id
+        timestamp checkout
+        timestamp due
+        timestamp returned
+    }
+```
+
+## Database Flow - Borrowing Process
+
+```mermaid
+flowchart TD
+    A[Member] -->|wants to borrow| B[Search Books]
+    B -->|finds| C[Book]
+    C -->|has multiple| D[Copies]
+    D -->|check status| E{Copy Available?}
+    E -->|Yes| F[Create Transaction]
+    E -->|No| G[Wait/Reserve]
+    F -->|records| H[Checkout Details]
+    H -->|includes| I[Checkout Timestamp]
+    H -->|includes| J[Due Date]
+    F -->|updates| K[Copy Status]
+    K -->|set to| L[Borrowed]
+    
+    M[Return Book] -->|member returns| N[Update Transaction]
+    N -->|sets| O[Return Timestamp]
+    N -->|updates| P[Copy Status]
+    P -->|set to| Q[Available]
+
+    style A fill:#e1f5ff
+    style C fill:#ffe1f5
+    style D fill:#fff5e1
+    style F fill:#e1ffe1
+    style M fill:#ffe1e1
+```
+
+## Data Relationships Overview
+
+```mermaid
+graph LR
+    A[Books] -->|many-to-many| B[Authors]
+    A -->|many-to-many| C[Genres]
+    A -->|one-to-many| D[Copies]
+    D -->|many-to-one| E[Transactions]
+    F[Members] -->|one-to-many| E
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#2196F3,color:#fff
+    style C fill:#FF9800,color:#fff
+    style D fill:#9C27B0,color:#fff
+    style E fill:#F44336,color:#fff
+    style F fill:#00BCD4,color:#fff
+```
+
+## Transaction Lifecycle Sequence
+
+```mermaid
+sequenceDiagram
+    participant M as Member
+    participant S as System
+    participant B as Book
+    participant C as Copy
+    participant T as Transaction
+
+    M->>S: Search for book
+    S->>B: Query books table
+    B-->>S: Return book details
+    S->>C: Check available copies
+    C-->>S: Return available copy
+    M->>S: Request to borrow
+    S->>M: Verify membership status
+    M-->>S: Active membership
+    S->>T: Create transaction record
+    T-->>S: Transaction ID
+    S->>C: Update copy status to 'borrowed'
+    S->>M: Checkout confirmed
+    
+    Note over M,T: Book is borrowed
+    
+    M->>S: Return book
+    S->>T: Update return_timestamp
+    S->>C: Update copy status to 'available'
+    S->>M: Return confirmed
+```
+
+## Schema Structure Hierarchy
+
+```mermaid
+graph TD
+    A[Library Database] --> B[Catalog Management]
+    A --> C[Member Management]
+    A --> D[Transaction Management]
+    
+    B --> E[Books Table]
+    B --> F[Authors Table]
+    B --> G[Genres Table]
+    B --> H[Copies Table]
+    B --> I[Book_Authors Junction]
+    B --> J[Book_Genres Junction]
+    
+    C --> K[Members Table]
+    
+    D --> L[Transactions Table]
+    
+    E -.->|references| I
+    F -.->|references| I
+    E -.->|references| J
+    G -.->|references| J
+    E -.->|parent of| H
+    H -.->|referenced by| L
+    K -.->|referenced by| L
+
+    style A fill:#1a237e,color:#fff
+    style B fill:#283593,color:#fff
+    style C fill:#283593,color:#fff
+    style D fill:#283593,color:#fff
+```
+
+## Key Statistics Queries Visualization
+
+```mermaid
+graph TB
+    subgraph "Book Analytics"
+        A1[Most Borrowed Books]
+        A2[Books by Genre]
+        A3[Books by Author]
+    end
+    
+    subgraph "Member Analytics"
+        B1[Active Members]
+        B2[Overdue Books]
+        B3[Popular Members]
+    end
+    
+    subgraph "Copy Analytics"
+        C1[Available Copies]
+        C2[Copy Status]
+        C3[Most Borrowed Copies]
+    end
+    
+    subgraph "Transaction Analytics"
+        D1[Current Checkouts]
+        D2[Return Rate]
+        D3[Overdue Rate]
+    end
+
+    style A1 fill:#81c784
+    style A2 fill:#81c784
+    style A3 fill:#81c784
+    style B1 fill:#64b5f6
+    style B2 fill:#64b5f6
+    style B3 fill:#64b5f6
+    style C1 fill:#ffb74d
+    style C2 fill:#ffb74d
+    style C3 fill:#ffb74d
+    style D1 fill:#e57373
+    style D2 fill:#e57373
+    style D3 fill:#e57373
+```
+
+## Table Cardinality Overview
+
+| Table | Typical Size | Growth Rate | Key Relationships |
+|-------|-------------|-------------|-------------------|
+| **authors** | 1,000-10,000 | Low | Many-to-many with books |
+| **genres** | 20-100 | Very Low | Many-to-many with books |
+| **books** | 10,000-100,000 | Medium | Central entity, many relationships |
+| **book_authors** | 10,000-150,000 | Medium | Junction table |
+| **book_genres** | 10,000-200,000 | Medium | Junction table |
+| **members** | 1,000-100,000 | Medium | One-to-many with transactions |
+| **copies** | 20,000-500,000 | Medium | Multiple copies per book |
+| **transactions** | 100,000-1,000,000+ | High | Historical records |
+
+## HTML Interactive Visualization
+
+To view an interactive version, save the following as `library-schema-interactive.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Schema Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab:hover {
+            background: #f5f5f5;
+        }
+        .tab.active {
+            color: #667eea;
+            background: #f5f5ff;
+            font-weight: bold;
+        }
+        .diagram {
+            display: none;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .diagram.active {
+            display: block;
+        }
+        .legend {
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #5e35b1;
+        }
+        .legend ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Book Library Web App</h1>
+        <p class="subtitle">Database Schema Visualizations</p>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showDiagram('erd')">Entity Relationship</button>
+            <button class="tab" onclick="showDiagram('flow')">Borrowing Flow</button>
+            <button class="tab" onclick="showDiagram('relationships')">Relationships</button>
+            <button class="tab" onclick="showDiagram('sequence')">Transaction Sequence</button>
+            <button class="tab" onclick="showDiagram('hierarchy')">Schema Hierarchy</button>
+        </div>
+
+        <div id="erd" class="diagram active">
+            <h2>Complete Entity Relationship Diagram</h2>
+            <div class="mermaid">
+erDiagram
+    authors ||--o{ book_authors : "written by"
+    books ||--o{ book_authors : has
+    books ||--o{ book_genres : categorized
+    genres ||--o{ book_genres : contains
+    books ||--o{ copies : "has physical"
+    members ||--o{ transactions : borrows
+    copies ||--o{ transactions : "borrowed as"
+
+    authors {
+        INTEGER author_id PK
+        TEXT author_name
+    }
+
+    genres {
+        INTEGER genre_id PK
+        TEXT genre_name UK
+    }
+
+    books {
+        INTEGER book_id PK
+        TEXT title
+        TEXT isbn UK
+        INTEGER publication_year
+        TEXT description
+    }
+
+    book_authors {
+        INTEGER book_id PK_FK
+        INTEGER author_id PK_FK
+    }
+
+    book_genres {
+        INTEGER book_id PK_FK
+        INTEGER genre_id PK_FK
+    }
+
+    members {
+        INTEGER member_id PK
+        TEXT full_name
+        TEXT contact_information
+        TEXT address_line_1
+        TEXT address_line_2
+        TEXT city
+        TEXT post_code
+        DATE join_date
+        DATE expiry_date
+    }
+
+    copies {
+        INTEGER copy_id PK
+        TEXT copy_identifier UK
+        INTEGER book_id FK
+        TEXT status
+    }
+
+    transactions {
+        INTEGER transaction_id PK
+        INTEGER member_id FK
+        INTEGER copy_id FK
+        TIMESTAMP checkout_timestamp
+        TIMESTAMP due_date
+        TIMESTAMP return_timestamp
+    }
+            </div>
+        </div>
+
+        <div id="flow" class="diagram">
+            <h2>Borrowing Process Flow</h2>
+            <div class="mermaid">
+flowchart TD
+    A[Member] -->|wants to borrow| B[Search Books]
+    B -->|finds| C[Book]
+    C -->|has multiple| D[Copies]
+    D -->|check status| E{Copy Available?}
+    E -->|Yes| F[Create Transaction]
+    E -->|No| G[Wait/Reserve]
+    F -->|records| H[Checkout Details]
+    H -->|includes| I[Checkout Timestamp]
+    H -->|includes| J[Due Date]
+    F -->|updates| K[Copy Status]
+    K -->|set to| L[Borrowed]
+    
+    M[Return Book] -->|member returns| N[Update Transaction]
+    N -->|sets| O[Return Timestamp]
+    N -->|updates| P[Copy Status]
+    P -->|set to| Q[Available]
+
+    style A fill:#e1f5ff
+    style C fill:#ffe1f5
+    style D fill:#fff5e1
+    style F fill:#e1ffe1
+    style M fill:#ffe1e1
+            </div>
+        </div>
+
+        <div id="relationships" class="diagram">
+            <h2>Data Relationships Overview</h2>
+            <div class="mermaid">
+graph LR
+    A[Books] -->|many-to-many| B[Authors]
+    A -->|many-to-many| C[Genres]
+    A -->|one-to-many| D[Copies]
+    D -->|many-to-one| E[Transactions]
+    F[Members] -->|one-to-many| E
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#2196F3,color:#fff
+    style C fill:#FF9800,color:#fff
+    style D fill:#9C27B0,color:#fff
+    style E fill:#F44336,color:#fff
+    style F fill:#00BCD4,color:#fff
+            </div>
+        </div>
+
+        <div id="sequence" class="diagram">
+            <h2>Transaction Lifecycle Sequence</h2>
+            <div class="mermaid">
+sequenceDiagram
+    participant M as Member
+    participant S as System
+    participant B as Book
+    participant C as Copy
+    participant T as Transaction
+
+    M->>S: Search for book
+    S->>B: Query books table
+    B-->>S: Return book details
+    S->>C: Check available copies
+    C-->>S: Return available copy
+    M->>S: Request to borrow
+    S->>M: Verify membership status
+    M-->>S: Active membership
+    S->>T: Create transaction record
+    T-->>S: Transaction ID
+    S->>C: Update copy status to 'borrowed'
+    S->>M: Checkout confirmed
+    
+    Note over M,T: Book is borrowed
+    
+    M->>S: Return book
+    S->>T: Update return_timestamp
+    S->>C: Update copy status to 'available'
+    S->>M: Return confirmed
+            </div>
+        </div>
+
+        <div id="hierarchy" class="diagram">
+            <h2>Schema Structure Hierarchy</h2>
+            <div class="mermaid">
+graph TD
+    A[Library Database] --> B[Catalog Management]
+    A --> C[Member Management]
+    A --> D[Transaction Management]
+    
+    B --> E[Books Table]
+    B --> F[Authors Table]
+    B --> G[Genres Table]
+    B --> H[Copies Table]
+    B --> I[Book_Authors Junction]
+    B --> J[Book_Genres Junction]
+    
+    C --> K[Members Table]
+    
+    D --> L[Transactions Table]
+    
+    E -.->|references| I
+    F -.->|references| I
+    E -.->|references| J
+    G -.->|references| J
+    E -.->|parent of| H
+    H -.->|referenced by| L
+    K -.->|referenced by| L
+
+    style A fill:#1a237e,color:#fff
+    style B fill:#283593,color:#fff
+    style C fill:#283593,color:#fff
+    style D fill:#283593,color:#fff
+            </div>
+        </div>
+
+        <div class="legend">
+            <h3>Legend & Key Points</h3>
+            <ul>
+                <li><strong>PK</strong> = Primary Key</li>
+                <li><strong>FK</strong> = Foreign Key</li>
+                <li><strong>UK</strong> = Unique Constraint</li>
+                <li><strong>Junction Tables</strong>: book_authors and book_genres enable many-to-many relationships</li>
+                <li><strong>CASCADE</strong>: Deleting a book removes its genre/author associations</li>
+                <li><strong>RESTRICT</strong>: Cannot delete authors/genres/books if referenced by other records</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+
+        function showDiagram(diagramId) {
+            // Hide all diagrams
+            document.querySelectorAll('.diagram').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected diagram
+            document.getElementById(diagramId).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+```
+
+---
+
+## Quick Reference: Table Purposes
+
+| Table | Purpose | Key Features |
+|-------|---------|--------------|
+| `authors` | Store author information | Simple lookup table |
+| `genres` | Book categorization | Unique genre names |
+| `books` | Central book catalog | ISBN, title, metadata |
+| `book_authors` | Link books to authors | Many-to-many junction |
+| `book_genres` | Link books to genres | Many-to-many junction |
+| `members` | Library member records | Contact & membership info |
+| `copies` | Physical book inventory | Track individual copies |
+| `transactions` | Borrowing history | Checkout, due, return dates |
