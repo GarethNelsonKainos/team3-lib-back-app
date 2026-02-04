@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management System - ER Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .diagram-container { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <h1>📚 Library Management System - Database Schema</h1>
+    <p><strong>Tables:</strong> 7 | <strong>Extensions:</strong> 2 (uuid-ossp, pg_trgm) | <strong>PostgreSQL:</strong> 14+</p>
+    
+    <div class="diagram-container">
+        <h2>Main Entity Relationship Diagram</h2>
+        <pre class="mermaid">
+erDiagram
+    books ||--o{ book_copies : "has copies"
+    books ||--o{ book_authors : "written by"
+    books }o--|| genres : "belongs to"
+    books ||--o{ borrowing_transactions : "tracked in"
+    authors ||--o{ book_authors : "authors"
+    book_copies ||--o{ borrowing_transactions : "borrowed as"
+    members ||--o{ borrowing_transactions : "borrows"
+    
+    books {
+        bigserial id PK
+        uuid uuid UK
+        varchar isbn UK
+        varchar title
+        integer genre_id FK
+        integer total_copies
+        integer available_copies
+    }
+    
+    book_copies {
+        bigserial id PK
+        varchar copy_number UK
+        bigint book_id FK
+        copy_status status
+        integer total_borrows
+    }
+    
+    authors {
+        bigserial id PK
+        varchar first_name
+        varchar last_name
+        varchar full_name
+    }
+    
+    book_authors {
+        bigserial id PK
+        bigint book_id FK
+        bigint author_id FK
+        integer author_order
+    }
+    
+    genres {
+        serial id PK
+        varchar name UK
+    }
+    
+    members {
+        bigserial id PK
+        varchar member_id UK
+        varchar full_name
+        member_status status
+        integer max_books_allowed
+        integer current_books_borrowed
+        boolean has_overdue_books
+    }
+    
+    borrowing_transactions {
+        bigserial id PK
+        bigint member_id FK
+        bigint book_copy_id FK
+        bigint book_id FK
+        transaction_status status
+        date due_date
+        timestamptz returned_at
+    }
+        </pre>
+    </div>
+
+    <div class="diagram-container">
+        <h2>Simplified Data Flow</h2>
+        <p><strong>7 Tables:</strong> genres, authors, books, book_authors, book_copies, members, borrowing_transactions</p>
+        <pre class="mermaid">
+graph TB
+    subgraph "Book Catalog"
+        G[Genres<br/>Reference Data]
+        A[Authors]
+        B[Books<br/>ISBN Title]
+        BA[Book-Authors<br/>Junction]
+        BC[Book Copies<br/>Physical Items]
+    end
+    
+    subgraph "Members"
+        M[Members<br/>Library Members]
+    end
+    
+    subgraph "Borrowing"
+        BT[Borrowing Transactions<br/>Check-out Returns]
+    end
+    
+    G -->|belongs to| B
+    A -->|many-to-many| BA
+    B -->|many-to-many| BA
+    B -->|has copies| BC
+    M -->|borrows| BT
+    BC -->|tracked in| BT
+    B -->|tracked in| BT
+    
+    style G fill:#e1f5ff
+    style A fill:#e1f5ff
+    style B fill:#ffe1e1
+    style BC fill:#ffe1e1
+    style M fill:#e1ffe1
+    style BT fill:#fff4e1
+        </pre>
+    </div>
+
+    <div class="diagram-container">
+        <h2>Borrowing Process Flow</h2>
+        <pre class="mermaid">
+sequenceDiagram
+    participant L as Librarian
+    participant M as Member
+    participant BC as Book Copy
+    participant BT as Transaction
+    
+    L->>M: Check eligibility
+    M-->>L: Status OK (2/3 books)
+    L->>BC: Check availability
+    BC-->>L: Available
+    L->>BT: Create transaction
+    Note over BT: Auto-set due date +14 days
+    BT->>BC: Status = borrowed
+    BT->>M: Increment book count
+    Note over L,M: ✅ Checkout complete
+        </pre>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>
