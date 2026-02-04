@@ -1,0 +1,96 @@
+-- Simplified Library Schema for Iterative Development
+
+CREATE TABLE IF NOT EXISTS books (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    isbn TEXT NOT NULL UNIQUE,
+    genre TEXT,
+    publication_year INT,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS authors (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS book_authors (
+    book_id BIGINT NOT NULL REFERENCES books(id),
+    author_id BIGINT NOT NULL REFERENCES authors(id),
+    PRIMARY KEY (book_id, author_id)
+);
+
+CREATE TABLE IF NOT EXISTS copies (
+    id BIGSERIAL PRIMARY KEY,
+    book_id BIGINT NOT NULL REFERENCES books(id),
+    copy_code TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'borrowed')),
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS members (
+    id BIGSERIAL PRIMARY KEY,
+    member_code TEXT NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    address TEXT,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS loans (
+    id BIGSERIAL PRIMARY KEY,
+    member_id BIGINT NOT NULL REFERENCES members(id),
+    copy_id BIGINT NOT NULL REFERENCES copies(id),
+    borrowed_at TIMESTAMP DEFAULT now(),
+    due_at TIMESTAMP NOT NULL,
+    returned_at TIMESTAMP,
+    status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed', 'overdue')),
+    condition_notes TEXT,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+-- Safe schema updates for iterative development
+-- (useful when tables already exist and you add new columns)
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS isbn TEXT;
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS genre TEXT;
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS publication_year INT;
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
+ALTER TABLE IF EXISTS books ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT now();
+
+ALTER TABLE IF EXISTS authors ADD COLUMN IF NOT EXISTS name TEXT;
+
+ALTER TABLE IF EXISTS copies ADD COLUMN IF NOT EXISTS book_id BIGINT;
+ALTER TABLE IF EXISTS copies ADD COLUMN IF NOT EXISTS copy_code TEXT;
+ALTER TABLE IF EXISTS copies ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
+ALTER TABLE IF EXISTS copies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
+ALTER TABLE IF EXISTS copies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT now();
+
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS member_code TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS first_name TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS last_name TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
+ALTER TABLE IF EXISTS members ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT now();
+
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS member_id BIGINT;
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS copy_id BIGINT;
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS borrowed_at TIMESTAMP DEFAULT now();
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS due_at TIMESTAMP;
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS returned_at TIMESTAMP;
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'open';
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS condition_notes TEXT;
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
+ALTER TABLE IF EXISTS loans ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT now();
