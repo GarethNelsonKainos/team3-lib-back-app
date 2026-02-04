@@ -35,7 +35,7 @@ CREATE TABLE members (
     full_name TEXT NOT NULL,
     contact_information TEXT NOT NULL,
     address_line_1 TEXT NOT NULL,
-    address_line_2 TEXT NOT NULL,
+    address_line_2 TEXT,
     city TEXT NOT NULL,
     post_code TEXT NOT NULL,
     join_date DATE NOT NULL,
