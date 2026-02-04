@@ -62,7 +62,7 @@ members ←── borrowing_records ──→ book_copies
 
 ## Migration Files
 
-Located in `src/database/migrations/`:
+Located in `database/migrations/`:
 
 | File | Description |
 |------|-------------|
