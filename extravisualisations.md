@@ -1,4 +1,4 @@
-# Book Library Web App - Schema Visualizations
+git# Book Library Web App - Schema Visualizations
 
 ## Entity Relationship Diagram
 
@@ -377,7 +377,7 @@ To view an interactive version, save the following as `library-schema-interactiv
 </head>
 <body>
     <div class="container">
-        <h1>📚 Book Library Web App</h1>
+        <h1>Book Library Web App</h1>
         <p class="subtitle">Database Schema Visualizations</p>
         
         <div class="tabs">
