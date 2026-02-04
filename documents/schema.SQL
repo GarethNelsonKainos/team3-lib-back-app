@@ -25,7 +25,7 @@ CREATE TABLE book_authors (
 );
 
 CREATE TABLE book_genres (
-    book_id INTEGER NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
+    book_id INTEGER NOT NULL REFERENCES books(book_id),
     genre_id INTEGER NOT NULL REFERENCES genres(genre_id) ON DELETE RESTRICT,
     PRIMARY KEY (book_id, genre_id)
 );
