@@ -3,6 +3,7 @@ import { AuthorController } from './controllers/AuthorController.js';
 import { BookController } from './controllers/BookController.js';
 import { GenreController } from './controllers/GenreController.js';
 import { MemberController } from './controllers/MemberController.js';
+import { CopyController } from './controllers/CopyController.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,12 +16,14 @@ const authorController = new AuthorController();
 const bookController = new BookController();
 const genreController = new GenreController();
 const memberController = new MemberController();
+const copyController = new CopyController();
+
 // Register routes
 app.use('/api/authors', authorController.router);
 app.use('/api/books', bookController.router);
 app.use('/api/genres', genreController.router);
 app.use('/api/members', memberController.router);
-
+app.use('/api/copies', copyController.router);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -31,6 +34,7 @@ app.get('/', (req, res) => {
       books: '/api/books',
       genres: '/api/genres',
       members: '/api/members',
+      copies: '/api/copies',
       health: '/health'
     }
   });
