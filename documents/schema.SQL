@@ -1,17 +1,17 @@
 -- Schema for Book Library Web App (PostgreSQL)
 
 CREATE TABLE authors (
-    author_id INTEGER PRIMARY KEY,
+    author_id SERIAL PRIMARY KEY,
     author_name TEXT NOT NULL
 );
 
 CREATE TABLE genres (
-    genre_id INTEGER PRIMARY KEY,
+    genre_id SERIAL PRIMARY KEY,
     genre_name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE books (
-    book_id INTEGER PRIMARY KEY,
+    book_id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     isbn TEXT NOT NULL UNIQUE,
      publication_year INTEGER,
@@ -31,7 +31,7 @@ CREATE TABLE book_genres (
 );
 
 CREATE TABLE members (
-    member_id INTEGER PRIMARY KEY,
+    member_id SERIAL PRIMARY KEY,
     full_name TEXT NOT NULL,
      contact_information TEXT,
      address_line_1 TEXT,
@@ -43,14 +43,14 @@ CREATE TABLE members (
 );
 
 CREATE TABLE copies (
-    copy_id INTEGER PRIMARY KEY,
+    copy_id SERIAL PRIMARY KEY,
     copy_identifier TEXT NOT NULL UNIQUE,
     book_id INTEGER NOT NULL REFERENCES books(book_id),
     status TEXT NOT NULL
 );
 
 CREATE TABLE transactions (
-    transaction_id INTEGER PRIMARY KEY,
+    transaction_id SERIAL PRIMARY KEY,
     member_id INTEGER NOT NULL REFERENCES members(member_id),
     copy_id INTEGER NOT NULL REFERENCES copies(copy_id),
     checkout_timestamp TIMESTAMP NOT NULL,
