@@ -1,2 +1,3 @@
-/nodemodulues
+/node_modules
 /dist
+/.env
