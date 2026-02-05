@@ -1,10 +1,6 @@
 import express from 'express';
 import { AuthorController } from './controllers/AuthorController.js';
-import { GenreController } from './controllers/GenreController.js';
-import { BookController } from './controllers/BookController.js';
-import { MemberController } from './controllers/MemberController.js';
-import { CopyController } from './controllers/CopyController.js';
-import { TransactionController } from './controllers/TransactionController.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,19 +10,11 @@ app.use(express.json());
 
 // Initialize controllers
 const authorController = new AuthorController();
-const genreController = new GenreController();
-const bookController = new BookController();
-const memberController = new MemberController();
-const copyController = new CopyController();
-const transactionController = new TransactionController();
+
 
 // Register routes
 app.use('/api/authors', authorController.router);
-app.use('/api/genres', genreController.router);
-app.use('/api/books', bookController.router);
-app.use('/api/members', memberController.router);
-app.use('/api/copies', copyController.router);
-app.use('/api/transactions', transactionController.router);
+
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -35,11 +23,6 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       authors: '/api/authors',
-      genres: '/api/genres',
-      books: '/api/books',
-      members: '/api/members',
-      copies: '/api/copies',
-      transactions: '/api/transactions',
       health: '/health'
     }
   });
