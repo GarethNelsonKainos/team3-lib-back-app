@@ -1,6 +1,6 @@
 import express from 'express';
 import { AuthorController } from './controllers/AuthorController.js';
-
+import { BookController } from './controllers/BookController.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,11 +10,11 @@ app.use(express.json());
 
 // Initialize controllers
 const authorController = new AuthorController();
-
+const bookController = new BookController();
 
 // Register routes
 app.use('/api/authors', authorController.router);
-
+app.use('/api/books', bookController.router);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -23,6 +23,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       authors: '/api/authors',
+      books: '/api/books',
       health: '/health'
     }
   });
