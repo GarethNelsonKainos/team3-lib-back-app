@@ -57,4 +57,11 @@ export class TransactionDao {
     const result = await db.result('DELETE FROM transactions WHERE transaction_id = $1', [id]);
     return result.rowCount > 0;
   }
+
+  async findActiveTransactionsByMember(memberId: number): Promise<Transaction[]> {
+    return db.manyOrNone<Transaction>(
+      'SELECT * FROM transactions WHERE member_id = $1 AND return_timestamp IS NULL',
+      [memberId]
+    );
+  }
 }

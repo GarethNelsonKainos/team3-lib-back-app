@@ -17,6 +17,13 @@ export class TransactionService {
   }
 
   async createTransaction(data: CreateTransactionDto): Promise<Transaction> {
+    // BUSINESS RULE: Check maximum 3 books per member
+    const activeBooks = await this.transactionDao.findActiveTransactionsByMember(data.member_id);
+    
+    if (activeBooks.length >= 3) {
+      throw new Error(`Member cannot borrow more than 3 books. Currently has ${activeBooks.length} active checkout(s).`);
+    }
+    
     return this.transactionDao.create(data);
   }
 

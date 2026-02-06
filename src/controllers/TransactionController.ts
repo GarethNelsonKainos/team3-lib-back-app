@@ -49,7 +49,8 @@ export class TransactionController {
       const transaction = await this.transactionService.createTransaction(req.body);
       res.status(201).json(transaction);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create transaction' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create transaction';
+      res.status(400).json({ error: errorMessage }); // "Member cannot borrow more than 3 books..."
     }
   }
 
