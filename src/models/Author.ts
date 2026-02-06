@@ -8,5 +8,5 @@ export interface CreateAuthorDto {
 }
 
 export interface UpdateAuthorDto {
-  author_name?: string;
+  author_name: string;
 }

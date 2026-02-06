@@ -18,23 +18,10 @@ export class AuthorDao {
   }
 
   async update(id: number, data: UpdateAuthorDto): Promise<Author | null> {
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
-
-    if (data.author_name !== undefined) {
-      updates.push(`author_name = $${paramCount++}`);
-      values.push(data.author_name);
-    }
-
-    if (updates.length === 0) {
-      return this.findById(id);
-    }
-
-    values.push(id);
-    const query = `UPDATE authors SET ${updates.join(', ')} WHERE author_id = $${paramCount} RETURNING *`;
-    
-    return db.oneOrNone<Author>(query, values);
+    return db.oneOrNone<Author>(
+      'UPDATE authors SET author_name = $1 WHERE author_id = $2 RETURNING *',
+      [data.author_name, id]
+    );
   }
 
   async delete(id: number): Promise<boolean> {

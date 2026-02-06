@@ -5,9 +5,9 @@ export class AuthorController {
   public router: Router;
   private authorService: AuthorService;
 
-  constructor() {
+  constructor(authorService: AuthorService = new AuthorService()) {
     this.router = Router();
-    this.authorService = new AuthorService();
+    this.authorService = authorService;
     this.initializeRoutes();
   }
 
@@ -23,65 +23,111 @@ export class AuthorController {
     try {
       const authors = await this.authorService.getAllAuthors();
       res.json(authors);
-    } catch (error) {
-      res.status(500).json();
+    } catch (error: Error | any) {
+      res.status(500).json({
+        error: error.message || 'An error occurred while fetching authors.',
+      });
     }
   }
 
   private async getAuthorById(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id as string);
+        if (isNaN(id) || id < 1) {
+        res.status(400).json({ error: 'Invalid author ID' });
+        return;
+      }
       const author = await this.authorService.getAuthorById(id);
       
       if (!author) {
-        res.status(404).json();
+        res.status(404).json({
+            error: 'Author not found.',
+        });
         return;
       }
       
       res.json(author);
-    } catch (error) {
-      res.status(500).json();
+    } catch (error: Error | any) {
+      res.status(500).json({
+        error: error.message || 'An error occurred while fetching the author.',
+      });
     }
   }
 
   private async createAuthor(req: Request, res: Response): Promise<void> {
-    try {
-      const author = await this.authorService.createAuthor(req.body);
-      res.status(201).json(author);
-    } catch (error) {
-      res.status(500).json();
+  try {
+    const { author_name } = req.body;
+    if (!author_name) {
+      res.status(400).json({ error: 'Author name is required' });
+      return;
     }
+    if (typeof author_name !== 'string') {
+      res.status(400).json({ error: 'Author name must be a string' });
+      return;
+    }
+    if (author_name.trim() === '') {
+      res.status(400).json({ error: 'Author name cannot be empty' });
+      return;
+    }
+    if (author_name.length > 255 || author_name.length < 1) {
+      res.status(400).json({ error: 'Author name must be between 1 and 255 characters' });
+      return;
+    }
+    
+    const author = await this.authorService.createAuthor({ author_name });
+    res.status(201).json(author);
+  } catch (error: Error | any) {
+    res.status(500).json({ 
+      error: error.message || 'Failed to create author',
+    });
   }
+}
 
   private async updateAuthor(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id as string);
+        if (isNaN(id) || id < 1) {
+        res.status(400).json({ error: 'Invalid author ID' });
+        return;
+      }
       const author = await this.authorService.updateAuthor(id, req.body);
       
       if (!author) {
-        res.status(404).json();
+        res.status(404).json({
+          error: 'Author not found.',
+        });
         return;
       }
       
       res.json(author);
-    } catch (error) {
-      res.status(500).json();
+    } catch (error: Error | any) {
+      res.status(500).json({
+        error: error.message || 'An error occurred while updating the author.',
+      });
     }
   }
 
   private async deleteAuthor(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id as string);
+        if (isNaN(id) || id < 1) {
+        res.status(400).json({ error: 'Invalid author ID' });
+        return;
+      }
       const deleted = await this.authorService.deleteAuthor(id);
       
       if (!deleted) {
-        res.status(404).json();
+        res.status(404).json({
+          error: 'Author not found.',
+        });
         return;
       }
       
       res.status(204).send();
-    } catch (error) {
-      res.status(500).json();
+    } catch (error: Error | any) {
+      res.status(500).json({
+        error: error.message || 'An error occurred while deleting the author.',
+      });
     }
   }
 }
